@@ -1,6 +1,5 @@
 "use strict";
 
-// Replace with your OpenWeatherMap API key
 const apiKey = "5ecad7aa4f8eac570de2c62ce0bf298a";
 
 // HTML Elements
@@ -221,11 +220,11 @@ cityInput.addEventListener("keypress", (e) => {
 const backBtn = document.getElementById("backBtn");
 
 backBtn.addEventListener("click", () => {
-    weatherDisplay.style.display = "none";  // hide main weather
-    forecastContainer.innerHTML = "";       // clear forecast cards
-    cityInput.value = "";                   // clear input
-    errorMsg.textContent = "";              // clear error message
-    particles = [];                          // stop current particle animation
+    weatherDisplay.style.display = "none"; 
+    forecastContainer.innerHTML = "";      
+    cityInput.value = "";                 
+    errorMsg.textContent = "";              
+    particles = [];                    
 });
 
 document.getElementById("backArrow").addEventListener("click", () => {
