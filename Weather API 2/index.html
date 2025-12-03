@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Weather App</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <canvas id="weatherCanvas"></canvas>
+
+    <div class="AppCard">
+
+        <div class="title">
+            <h1>Weather App</h1>
+            <p>Check the weather by entering a <span>city name</span></p>
+        </div>
+
+        <div class="searchArea">
+            <input id="cityInput" type="text" placeholder="Enter city name">
+            <button id="searchBtn">Search</button>
+        </div>
+
+        <p class="errorMsg"></p>
+
+        <!-- Toggle Celsius/Fahrenheit -->
+        <div class="tempToggle">
+            <button id="toggleTemp">Show °F</button>
+        </div>
+
+        <div class="WeatherDisplay">
+            <button id="backArrow" class="backArrow">←</button>
+            <img class="weatherIcon" alt="weather icon">
+            <h1 class="temperature"></h1>
+            <h2 class="city"></h2>
+            <p class="description"></p>
+
+            <div class="details">
+                <p>Humidity: <span class="humidity"></span></p>
+                <p>Wind: <span class="wind"></span></p>
+                <p>Feels Like: <span class="feels"></span></p>
+            </div>
+        </div>
+
+        <!-- 5-day Forecast -->
+        <div class="forecast">
+            <h3>5-Day Forecast</h3>
+            <div class="forecast-cards"></div>
+        </div>
+
+        <!-- Back / Home Button -->
+        <button id="backBtn" class="backBtn">Return Home</button>
+
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
