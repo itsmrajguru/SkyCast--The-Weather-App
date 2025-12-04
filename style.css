@@ -1,280 +1,248 @@
-html,
-body {
-    height: 100%;
-    width: 100%;
+/*
+ * 🎨 Style.css - The Vibe Check
+ * Dark-mode glassmorphism with BIG text, smooth view transitions, and a new, centralized, horizontal layout!
+ */
+
+/* Global Reset and Typography */
+* {
     margin: 0;
     padding: 0;
-    font-family: 'Roboto', sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #2a0845 0%, #6f428c 100%); 
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #222;
-    transition: background 0.5s ease;
-    flex-direction: column;
-    overflow: hidden;
+    color: #f0f0f0; 
+    padding: 20px;
+    overflow: hidden; 
+    position: relative; 
 }
 
-#weatherCanvas {
-    position: fixed;
+/* ☁️ CLOUD ANIMATION KEYFRAMES and Styles (Unchanged) */
+@keyframes moveClouds {
+    0% { background-position: 0 0; }
+    100% { background-position: 1000px 0; }
+}
+
+.cloud-bg {
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    background-image: url('https://www.transparenttextures.com/patterns/cream-pixels.png'); 
+    opacity: 0.15; 
+    animation: moveClouds 120s linear infinite; 
+    pointer-events: none; 
     z-index: 0;
-    pointer-events: none;
 }
 
-.AppCard {
-    background: linear-gradient(145deg, #4e54c8, #8f94fb);
-    color: #fff;
-    padding: 50px 40px;
+/* Glassmorphism Card Mixin */
+.glass-card {
+    background: rgba(255, 255, 255, 0.1); 
     border-radius: 25px;
-    width: 85%;
-    max-width: 700px;
-    text-align: center;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2); 
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 10; 
     position: relative;
-    z-index: 1;
 }
 
-.title h1 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 3rem;
-    font-weight: 700;
+.glass-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.8);
 }
 
-.title p {
-    font-size: 1.4rem;
-    color: #e0e0e0;
-}
-
-.title span {
-    color: #f4e04d;
-    font-weight: 700;
-}
-
-.searchArea {
-    display: flex;
-    margin: 25px 0;
-}
-
-.searchArea input {
-    flex: 1;
-    padding: 15px 20px;
-    border-radius: 30px;
-    border: none;
-    outline: none;
-    font-size: 1.2rem;
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-    transition: background 0.3s;
-}
-
-.searchArea input::placeholder {
-    color: #ddd;
-}
-
-.searchArea input:focus {
-    background: rgba(255, 255, 255, 0.25);
-}
-
-.searchArea button {
-    padding: 15px 25px;
-    border: none;
-    border-radius: 30px;
-    margin-left: 12px;
-    cursor: pointer;
-    background: #f4e04d;
-    color: #333;
-    font-weight: 600;
-    font-size: 1.1rem;
-    transition: background 0.3s, transform 0.2s;
-}
-
-.searchArea button:hover {
-    background: #fff176;
-    transform: scale(1.05);
-}
-
-.errorMsg {
-    color: #ff5252;
-    font-weight: 600;
-    margin-top: 8px;
-    font-size: 1.1rem;
-}
-
-.tempToggle {
-    margin: 15px 0;
-}
-
-.tempToggle button {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    padding: 10px 18px;
-    border-radius: 20px;
-    color: #fff;
-    cursor: pointer;
-    font-size: 1.1rem;
-    transition: background 0.3s;
-}
-
-.tempToggle button:hover {
-    background: rgba(255, 255, 255, 0.35);
-}
-
-.WeatherDisplay {
-    display: none;
-    margin-top: 25px;
-    animation: fadeIn 0.5s ease forwards;
+/* App Container and View Transitions (Unchanged) */
+.weather-app {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    max-width: 450px; 
+    z-index: 20;
+    position: relative;
+    min-height: 700px; 
 }
 
-.weatherIcon {
-    width: 160px;
-    margin-bottom: 15px;
+.view {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateX(100%); 
+}
+
+#home-view { transform: translateX(0); }
+.view.active-view { opacity: 1; pointer-events: auto; transform: translateX(0); }
+#home-view.active-view ~ #results-view { transform: translateX(100%); }
+#results-view.active-view { transform: translateX(0); }
+#home-view:not(.active-view) { transform: translateX(-100%); }
+
+/* Main Weather Card Structure */
+.main-card { 
+    padding: 30px; 
+    text-align: center; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+
+/* New: Stacked Location Info */
+.location-info-stacked {
+    margin-bottom: 20px;
+}
+.location-info-stacked h2 {
+    font-size: 3.5em; 
+    font-weight: 700;
+    color: #FFD700; 
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+.location-info-stacked p {
+    font-size: 1.5em; 
+    font-weight: 600;
+    color: #FF4500; 
+    margin-top: 5px;
+}
+
+/* New: Main Temperature Block */
+.main-temp-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.temp-info {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+}
+
+#weather-icon {
+    font-size: 5em; 
+    margin: 0;
+    color: #ADFF2F; 
 }
 
 .temperature {
-    font-size: 3.5rem;
-    font-weight: 700;
-    font-family: 'Montserrat', sans-serif;
+    font-size: 8em; 
+    font-weight: 800;
+    color: #FFFFFF; 
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
+    letter-spacing: -2px;
+    line-height: 1; 
 }
 
-.city {
-    font-size: 2rem;
-    font-weight: 500;
-    margin: 5px 0;
-}
-
-.description {
-    font-style: italic;
-    font-size: 1.3rem;
-    margin-bottom: 15px;
-    color: #f0f0f0;
-}
-
-.details p {
-    margin: 8px 0;
-    font-size: 1.2rem;
-}
-
-.forecast {
-    margin-top: 30px;
-    text-align: center;
-}
-
-.forecast h3 {
-    margin-bottom: 15px;
-    font-size: 1.5rem;
-}
-
-.forecast-cards {
-    display: flex;
-    justify-content: space-between;
+/* ➡️ HORIZONTAL DETAILS GRID ⬅️ */
+.details-grid-horizontal {
+    display: flex; 
+    justify-content: space-between; 
+    width: 100%; 
     gap: 10px;
-    flex-wrap: nowrap;
-    /* keep horizontal */
-    overflow-x: auto;
-    padding-bottom: 10px;
+    margin-bottom: 30px;
+    padding: 0 10px; 
 }
 
-.forecast-card {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 15px;
-    padding: 12px;
-    min-width: 120px;
-    color: #fff;
-    text-align: center;
-    transition: background 0.3s, transform 0.2s;
-    flex-shrink: 0;
+.details-grid-horizontal .detail-card {
+    flex-basis: 33%; 
+    padding: 15px 5px; 
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05); 
 }
 
-.forecast-card:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: scale(1.05);
-}
-
-.forecast-card img {
-    width: 60px;
-    margin-bottom: 5px;
-}
-
-.backBtn {
-    margin-top: 25px;
-    padding: 12px 25px;
-    border-radius: 25px;
-    border: none;
-    background: #f4e04d;
-    color: #333;
+.details-grid-horizontal .detail-value {
+    font-size: 1.2em; 
     font-weight: 700;
-    font-size: 1.2rem;
+    color: #FFFFFF;
+}
+
+.details-grid-horizontal .detail-label {
+    font-size: 0.8em; 
+    color: #B0E0E6;
+}
+/* ---------------------------------- */
+
+
+/* ➡️ HORIZONTAL FORECAST STYLES (WITH SCROLLBAR VISIBLE) ⬅️ */
+.forecast-container {
+    width: 100%; 
+    padding: 20px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.forecast-title { 
+    font-size: 1.6em; 
+    font-weight: 700; 
+    color: #FF00FF; 
+    text-align: left; 
+    margin-bottom: 15px; 
+    padding-left: 10px;
+}
+
+.forecast-list {
+    display: flex;
+    flex-wrap: nowrap; 
+    /* This rule is what makes the scrollbar appear if content overflows */
+    overflow-x: auto; 
+    padding-bottom: 10px; 
+    justify-content: flex-start; 
+    gap: 12px;
+    
+    /* ⚠️ SCROLLBAR FIX: Removed all scrollbar-hiding rules */
+}
+
+/* Custom styling for the scrollbar (optional, but shows professionalism) */
+.forecast-list::-webkit-scrollbar {
+    height: 8px; /* Height of the horizontal scrollbar */
+}
+
+.forecast-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3); /* Color of the scroll thumb */
+    border-radius: 10px;
+}
+
+.forecast-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1); /* Color of the scroll track */
+}
+
+.forecast-item {
+    flex: 0 0 90px; 
+    padding: 15px 8px; 
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.1);
     cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
 }
 
-.backBtn:hover {
-    background: #fff176;
-    transform: scale(1.05);
-}
+/* --- Navigation & Widget (Unchanged) --- */
+.top-nav { display: flex; justify-content: space-between; margin-bottom: 15px; }
+.nav-btn { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; padding: 8px 15px; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.3s ease, transform 0.2s ease; backdrop-filter: blur(5px); }
+.back-button { margin-bottom: 20px; background: linear-gradient(45deg, #BA55D3, #FF69B4); }
+.search-container { display: flex; margin-bottom: 25px; background: rgba(255, 255, 255, 0.9); border-radius: 50px; padding: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
+#city-input { flex-grow: 1; border: none; background: none; padding: 10px 20px; font-size: 18px; color: #333; outline: none; }
+#search-btn { background: linear-gradient(45deg, #FF69B4, #BA55D3); border: none; border-radius: 50%; width: 45px; height: 45px; color: #fff; cursor: pointer; transition: background 0.3s ease; font-size: 1.2em; }
+#search-btn:hover { background: linear-gradient(45deg, #BA55D3, #FF69B4); }
+.conversion-widget { padding: 25px; margin-top: 30px; }
+.widget-title { font-size: 1.2em; font-weight: 700; color: #00FFFF; margin-bottom: 15px; }
+.converter-inputs { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.converter-inputs input { width: 45%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.5); background: rgba(0, 0, 0, 0.2); color: #fff; font-size: 1.1em; text-align: center; outline: none; transition: border-color 0.3s ease; }
+.converter-inputs input:focus { border-color: #FFD700; }
+.converter-icon { color: #FFD700; }
+.conversion-result { margin-top: 20px; font-size: 1em; font-weight: 500; color: #ADFF2F; text-align: center; min-height: 20px; }
+.hidden { display: none !important; }
+.error-message { color: #fff; font-size: 1.2em; margin-top: 20px; text-align: center; padding: 18px; background: rgba(255, 50, 50, 0.4); border-radius: 15px; backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.4); }
 
-.backArrow {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    background: rgba(0,0,0,0.3);
-    color: #fff;
-    border: none;
-    padding: 10px 15px;
-    font-size: 1.5rem;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 999;
-    transition: background 0.3s;
-}
-
-.backArrow:hover {
-    background: rgba(0,0,0,0.5);
-}
-
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@media (max-width: 768px) {
-
-    html,
-    body {
-        height: 100vh;
-    }
-
-    .AppCard {
-        width: 95%;
-        padding: 35px 25px;
-    }
-
-    .WeatherDisplay {
-        flex-direction: column;
-    }
-
-    .forecast-cards {
-        gap: 12px;
-    }
-
-    .forecast-card {
-        min-width: 100px;
-    }
+/* Responsiveness */
+@media (max-width: 480px) {
+    .main-card { padding: 30px 20px; }
+    .location-info-stacked h2 { font-size: 2.8em; }
+    .location-info-stacked p { font-size: 1.2em; }
+    .temperature { font-size: 6em; }
+    #weather-icon { font-size: 4em; }
 }

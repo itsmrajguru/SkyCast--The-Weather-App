@@ -1,236 +1,174 @@
-"use strict";
+//
+// 🚀 script.js - The Brains of the Operation - Now with View Transitions and Converters!
+// Managing API calls, smooth view switching, and widget functionality.
+//
 
-const apiKey = "5ecad7aa4f8eac570de2c62ce0bf298a";
+// --- API Secret Sauce (Shhh!) ---
+const API_KEY = '5ecad7aa4f8eac570de2c62ce0bf298a'; // Seriously, replace this placeholder!
+const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
-// HTML Elements
-const searchBtn = document.getElementById("searchBtn");
-const cityInput = document.getElementById("cityInput");
-const weatherDisplay = document.querySelector(".WeatherDisplay");
-const errorMsg = document.querySelector(".errorMsg");
-const toggleBtn = document.getElementById("toggleTemp");
+// --- DOM References (Aka "My HTML Friends") ---
+const cityInput = document.getElementById('city-input');
+const searchButton = document.getElementById('search-btn'); 
+const oopsMessage = document.getElementById('error-message'); 
 
-const tempEl = document.querySelector(".temperature");
-const cityEl = document.querySelector(".city");
-const descEl = document.querySelector(".description");
-const humidityEl = document.querySelector(".humidity");
-const windEl = document.querySelector(".wind");
-const feelsEl = document.querySelector(".feels");
-const iconEl = document.querySelector(".weatherIcon");
+// View Controllers
+const homeView = document.getElementById('home-view');
+const resultsView = document.getElementById('results-view');
+const backButton = document.getElementById('back-btn');
 
-const forecastContainer = document.querySelector(".forecast-cards");
+// Conversion Widget Elements
+const celsiusInput = document.getElementById('celsius-input');
+const fahrenheitInput = document.getElementById('fahrenheit-input');
+const conversionResult = document.getElementById('conversion-result');
 
-// Canvas for animated backgrounds
-const canvas = document.getElementById('weatherCanvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
-let weatherType = ""; // "Clear", "Rain", "Snow"
-
-let isCelsius = true;
-let currentTemp = 0;
-let currentFeels = 0;
-
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
-
-// Particle constructor
-class Particle {
-    constructor(x, y, vx, vy, size, color) {
-        this.x = x;
-        this.y = y;
-        this.vx = vx;
-        this.vy = vy;
-        this.size = size;
-        this.color = color;
-    }
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (this.y > canvas.height || this.x > canvas.width || this.x < 0) {
-            this.y = 0;
-            this.x = Math.random() * canvas.width;
-        }
-    }
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+// --- View Transition Function ---
+function switchView(targetView) {
+    if (targetView === 'results') {
+        homeView.classList.remove('active-view');
+        resultsView.classList.add('active-view');
+    } else { // targetView === 'home'
+        resultsView.classList.remove('active-view');
+        homeView.classList.add('active-view');
+        oopsMessage.classList.add('hidden'); // Clear error on back
     }
 }
 
-// Generate particles based on weather
-function generateParticles(type) {
-    particles = [];
-    weatherType = type;
-    let count = 0;
-
-    if (type === "Rain") count = 300;
-    else if (type === "Snow") count = 200;
-    else if (type === "Clear") count = 100;
-    else count = 0;
-
-    for (let i = 0; i < count; i++) {
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        let vx = 0;
-        let vy = type === "Snow" ? Math.random() * 1 + 0.5 : Math.random() * 4 + 4;
-        let size = type === "Snow" ? Math.random() * 3 + 1 : 2;
-        let color = type === "Rain" ? "rgba(174,194,224,0.5)" : "rgba(255,255,255,0.8)";
-        particles.push(new Particle(x, y, vx, vy, size, color));
+// --- Event Listeners: Let's make things clickable! ---
+searchButton.addEventListener('click', () => {
+    const cityName = cityInput.value.trim();
+    if (cityName) {
+        getTheWeather(cityName);
     }
-}
+});
 
-// Animation loop
-function animateParticles() {
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-
-    particles.forEach(p => {
-        if(weatherType === "Clear") {
-            ctx.strokeStyle = "rgba(255, 255, 200, 0.3)";
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p.x, p.y + 20);
-            ctx.stroke();
-            p.y += 2;
-            if (p.y > canvas.height) p.y = 0;
-        } else {
-            p.update();
-            p.draw();
-        }
-    });
-
-    requestAnimationFrame(animateParticles);
-}
-animateParticles();
-
-// Fetch weather
-async function getWeather(city) {
-    try {
-        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
-        const data = await res.json();
-
-        if(data.cod === "404") {
-            errorMsg.textContent = "City not found! Try again.";
-            weatherDisplay.style.display = "none";
-            forecastContainer.innerHTML = "";
-            return;
-        }
-
-        errorMsg.textContent = "";
-        weatherDisplay.style.display = "block";
-
-        currentTemp = data.main.temp;
-        currentFeels = data.main.feels_like;
-        updateTemperature();
-
-        cityEl.textContent = data.name;
-        descEl.textContent = data.weather[0].description;
-        humidityEl.textContent = data.main.humidity + "%";
-        windEl.textContent = data.wind.speed + " km/h";
-
-        const iconCode = data.weather[0].icon;
-        iconEl.src = `http://openweathermap.org/img/wn/${iconCode}@2x.png`;
-
-        // Background gradients
-        const weather = data.weather[0].main;
-        const bgColors = {
-            Clear: "linear-gradient(145deg, #fddb92, #f5aa42)",
-            Clouds: "linear-gradient(145deg, #757f9a, #d7dde8)",
-            Rain: "linear-gradient(145deg, #1f3a93, #3a7bd5)",
-            Drizzle: "linear-gradient(145deg, #4aa0d5, #7fdbff)",
-            Snow: "linear-gradient(145deg, #83a4d4, #b6fbff)",
-            Mist: "linear-gradient(145deg, #3e5151, #decba4)",
-            Haze: "linear-gradient(145deg, #6e7f80, #c0c0c0)"
-        };
-        document.body.style.background = bgColors[weather] || "#222";
-
-        // Generate particle animation
-        if(weather === "Rain" || weather === "Drizzle") generateParticles("Rain");
-        else if(weather === "Snow") generateParticles("Snow");
-        else if(weather === "Clear") generateParticles("Clear");
-        else particles = [];
-
-        getForecast(city);
-
-    } catch(err) {
-        console.error(err);
-        errorMsg.textContent = "Something went wrong! Try again.";
-        weatherDisplay.style.display = "none";
-        forecastContainer.innerHTML = "";
+cityInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        searchButton.click();
     }
-}
+});
 
-// Toggle Celsius / Fahrenheit
-function updateTemperature() {
-    if(isCelsius) {
-        tempEl.textContent = Math.round(currentTemp) + "°C";
-        feelsEl.textContent = Math.round(currentFeels) + "°C";
-        toggleBtn.textContent = "Show °F";
+backButton.addEventListener('click', () => {
+    switchView('home');
+});
+
+// Default behavior on load: show home view
+document.addEventListener('DOMContentLoaded', () => {
+    homeView.classList.add('active-view');
+});
+
+// --- TEMP CONVERSION LOGIC ---
+celsiusInput.addEventListener('input', () => {
+    const celsius = parseFloat(celsiusInput.value);
+    if (!isNaN(celsius)) {
+        const fahrenheit = (celsius * 9/5) + 32;
+        fahrenheitInput.value = fahrenheit.toFixed(2);
+        conversionResult.textContent = `${celsius}°C is ${fahrenheit.toFixed(2)}°F`;
     } else {
-        tempEl.textContent = Math.round(currentTemp * 9/5 + 32) + "°F";
-        feelsEl.textContent = Math.round(currentFeels * 9/5 + 32) + "°F";
-        toggleBtn.textContent = "Show °C";
+        fahrenheitInput.value = '';
+        conversionResult.textContent = 'Enter a value to convert.';
+    }
+});
+
+fahrenheitInput.addEventListener('input', () => {
+    const fahrenheit = parseFloat(fahrenheitInput.value);
+    if (!isNaN(fahrenheit)) {
+        const celsius = (fahrenheit - 32) * 5/9;
+        celsiusInput.value = celsius.toFixed(2);
+        conversionResult.textContent = `${fahrenheit}°F is ${celsius.toFixed(2)}°C`;
+    } else {
+        celsiusInput.value = '';
+        conversionResult.textContent = 'Enter a value to convert.';
+    }
+});
+
+
+// --- The Core Fetching Function ---
+async function getTheWeather(city) {
+    const currentEndpoint = `${BASE_URL}/weather?q=${city}&appid=${API_KEY}&units=metric`;
+    const forecastEndpoint = `${BASE_URL}/forecast?q=${city}&appid=${API_KEY}&units=metric`;
+    
+    // Show a loading indicator briefly (optional, but good practice)
+    oopsMessage.textContent = `Searching for ${city}...`;
+    oopsMessage.classList.remove('hidden');
+
+    try {
+        const [currentRes, forecastRes] = await Promise.all([
+            fetch(currentEndpoint),
+            fetch(forecastEndpoint)
+        ]);
+        
+        if (!currentRes.ok || !forecastRes.ok) {
+            throw new Error('City not found.');
+        }
+
+        const currentData = await currentRes.json();
+        const forecastData = await forecastRes.json();
+        
+        updateCurrentUI(currentData);
+        buildForecastCards(forecastData);
+        
+        // Success! Switch to the results view.
+        switchView('results');
+        oopsMessage.classList.add('hidden');
+        
+    } catch (error) {
+        console.error('Data Fetching Failed:', error);
+        oopsMessage.textContent = 'Whoops! Couldn\'t find that city or the API is giving us trouble.';
+        oopsMessage.classList.remove('hidden');
     }
 }
 
-toggleBtn.addEventListener("click", () => {
-    isCelsius = !isCelsius;
-    updateTemperature();
-    getForecast(cityInput.value); // update forecast temps
-});
+// --- The UI Update Functions (Unchanged, just using document.getElementById directly) ---
 
-// Fetch 5-day forecast
-async function getForecast(city) {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`);
-    const data = await res.json();
+function updateCurrentUI(data) {
+    const { name, sys, main, wind, weather } = data;
 
-    const daily = data.list.filter(item => item.dt_txt.includes("12:00:00"));
+    document.getElementById('location-name').textContent = `${name}, ${sys.country}`;
+    document.getElementById('weather-condition-text').textContent = weather[0].description.charAt(0).toUpperCase() + weather[0].description.slice(1);
+    document.getElementById('current-temp').textContent = `${Math.round(main.temp)}°C`;
+    
+    document.getElementById('humidity').textContent = `${main.humidity}%`;
+    document.getElementById('wind-speed').textContent = `${(wind.speed * 3.6).toFixed(1)} km/h`; 
+    document.getElementById('feels-like').textContent = `${Math.round(main.feels_like)}°C`;
+    
+    const weatherIcon = document.getElementById('weather-icon');
+    weatherIcon.className = 'fas'; 
+    weatherIcon.classList.add(getIconClass(weather[0].id));
+}
 
-    forecastContainer.innerHTML = "";
-    daily.slice(0,5).forEach(day => {
-        const card = document.createElement("div");
-        card.classList.add("forecast-card");
+function buildForecastCards(data) {
+    const dailyForecasts = data.list.filter(item => item.dt_txt.includes('12:00:00'));
+    const forecastCards = document.getElementById('forecast-list');
+    forecastCards.innerHTML = ''; 
 
-        const icon = document.createElement("img");
-        icon.src = `http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`;
-        const date = new Date(day.dt_txt);
-        const dayName = date.toLocaleDateString(undefined, { weekday: 'short' });
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-        let temp = isCelsius ? Math.round(day.main.temp) + "°C" : Math.round(day.main.temp * 9/5 + 32) + "°F";
+    dailyForecasts.slice(0, 5).forEach(item => {
+        const date = new Date(item.dt * 1000);
+        const dayName = daysOfWeek[date.getDay()];
+        const temp = Math.round(item.main.temp);
+        const iconClass = getIconClass(item.weather[0].id);
 
-        card.innerHTML = `<p>${dayName}</p>`;
-        card.appendChild(icon);
-        card.innerHTML += `<p>${temp}</p>`;
-
-        forecastContainer.appendChild(card);
+        const cardHTML = `
+            <div class="forecast-item glass-card">
+                <p class="day">${dayName}</p>
+                <i class="fas ${iconClass}"></i>
+                <p class="temp">${temp}°C</p>
+            </div>
+        `;
+        forecastCards.innerHTML += cardHTML;
     });
 }
 
-// Event listeners
-searchBtn.addEventListener("click", () => getWeather(cityInput.value));
-cityInput.addEventListener("keypress", (e) => {
-    if(e.key === "Enter") getWeather(cityInput.value);
-});
+function getIconClass(weatherId) {
+    if (weatherId >= 200 && weatherId < 300) return 'fa-bolt'; 
+    if (weatherId >= 300 && weatherId < 400) return 'fa-cloud-rain'; 
+    if (weatherId >= 500 && weatherId < 600) return 'fa-cloud-showers-heavy'; 
+    if (weatherId >= 600 && weatherId < 700) return 'fa-snowflake'; 
+    if (weatherId >= 700 && weatherId < 800) return 'fa-smog'; 
+    if (weatherId === 800) return 'fa-sun'; 
+    if (weatherId > 800) return 'fa-cloud'; 
 
-const backBtn = document.getElementById("backBtn");
-
-backBtn.addEventListener("click", () => {
-    weatherDisplay.style.display = "none"; 
-    forecastContainer.innerHTML = "";      
-    cityInput.value = "";                 
-    errorMsg.textContent = "";              
-    particles = [];                    
-});
-
-document.getElementById("backArrow").addEventListener("click", () => {
-    weatherDisplay.style.display = "none";
-    forecastContainer.innerHTML = "";
-    cityInput.value = "";
-    errorMsg.textContent = "";
-    particles = [];
-});
+    return 'fa-question-circle'; 
+}

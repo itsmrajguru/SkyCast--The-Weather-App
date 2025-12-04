@@ -1,68 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Weather App</title>
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500&display=swap"
-        rel="stylesheet">
-
+    <title>My Custom Dark-Mode Weather App | Dynamic View</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
-
 <body>
+    <div class="cloud-bg"></div>
 
-    <canvas id="weatherCanvas"></canvas>
+    <div class="weather-app">
+        
+        <div id="home-view" class="view active-view">
+            
+            <div class="top-nav">
+                <button class="nav-btn" title="Hourly Forecast"><i class="fas fa-clock"></i> Hourly</button>
+                <button class="nav-btn" title="App Settings"><i class="fas fa-cog"></i> Settings</button>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="city-input" placeholder="Search a city..." autocomplete="off">
+                <button id="search-btn" title="Search"><i class="fas fa-search"></i></button>
+            </div>
 
-    <div class="AppCard">
-
-        <div class="title">
-            <h1>Weather App</h1>
-            <p>Check the weather by entering a <span>city name</span></p>
+            <div class="conversion-widget glass-card">
+                <h3 class="widget-title"><i class="fas fa-temperature-arrow-up"></i> Temp Converter</h3>
+                <div class="converter-inputs">
+                    <input type="number" id="celsius-input" placeholder="°C">
+                    <i class="fas fa-right-left converter-icon"></i>
+                    <input type="number" id="fahrenheit-input" placeholder="°F">
+                </div>
+                <p class="conversion-result" id="conversion-result">Enter a value to convert.</p>
+            </div>
+            <p id="error-message" class="error-message hidden">City not found. Please try again.</p>
         </div>
+        <div id="results-view" class="view">
+            <button id="back-btn" class="nav-btn back-button"><i class="fas fa-arrow-left"></i> Back to Search</button>
 
-        <div class="searchArea">
-            <input id="cityInput" type="text" placeholder="Enter city name">
-            <button id="searchBtn">Search</button>
-        </div>
+            <div id="weather-display" class="main-card glass-card">
+                <div class="location-info-stacked">
+                    <h2 id="location-name">City, Country</h2>
+                    <p id="weather-condition-text">Condition</p>
+                </div>
 
-        <p class="errorMsg"></p>
+                <div class="main-temp-block">
+                    <div class="temp-info">
+                        <i id="weather-icon" class="fas fa-sun"></i>
+                        <span id="current-temp" class="temperature">--°C</span>
+                    </div>
+                </div>
 
-        <!-- Toggle Celsius/Fahrenheit -->
-        <div class="tempToggle">
-            <button id="toggleTemp">Show °F</button>
-        </div>
+                <div class="details-grid-horizontal">
+                    <div class="detail-card glass-card"><i class="fas fa-water"></i><div class="detail-content"><p class="detail-value" id="humidity">--%</p><p class="detail-label">Humidity</p></div></div>
+                    <div class="detail-card glass-card"><i class="fas fa-wind"></i><div class="detail-content"><p class="detail-value" id="wind-speed">-- km/h</p><p class="detail-label">Wind Speed</p></div></div>
+                    <div class="detail-card glass-card"><i class="fas fa-temperature-half"></i><div class="detail-content"><p class="detail-value" id="feels-like">--°C</p><p class="detail-label">Feels Like</p></div></div>
+                </div>
 
-        <div class="WeatherDisplay">
-            <button id="backArrow" class="backArrow">←</button>
-            <img class="weatherIcon" alt="weather icon">
-            <h1 class="temperature"></h1>
-            <h2 class="city"></h2>
-            <p class="description"></p>
-
-            <div class="details">
-                <p>Humidity: <span class="humidity"></span></p>
-                <p>Wind: <span class="wind"></span></p>
-                <p>Feels Like: <span class="feels"></span></p>
+                <div class="forecast-container">
+                    <h3 class="forecast-title">5-Day Forecast</h3>
+                    <div id="forecast-list" class="forecast-list">
+                        </div>
+                </div>
             </div>
         </div>
-
-        <!-- 5-day Forecast -->
-        <div class="forecast">
-            <h3>5-Day Forecast</h3>
-            <div class="forecast-cards"></div>
         </div>
-
-        <!-- Back / Home Button -->
-        <button id="backBtn" class="backBtn">Return Home</button>
-
-
-    </div>
 
     <script src="script.js"></script>
 </body>
-
 </html>
